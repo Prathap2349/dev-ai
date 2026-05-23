@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Dev AI - Your Personal Terminal Assistant
-GitHub: https://github.com/YOUR_USERNAME/dev-ai
+GitHub: https://github.com/Prathap2349/dev-ai
 """
 
 import os
