@@ -1,0 +1,36 @@
+# Never commit these
+.env
+*.env
+config.json
+secrets.json
+
+# Dev AI user data - keep private
+~/.dev_history.json
+~/.dev_config.json
+~/.dev_persona.json
+~/.dev_todos.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
