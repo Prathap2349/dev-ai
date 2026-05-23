@@ -59,7 +59,7 @@ A powerful AI assistant that lives in your Mac terminal. Powered by Groq and lla
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/dev-ai.git
+git clone https://github.com/Prathap2349/dev-ai.git
 cd dev-ai
 ```
 
