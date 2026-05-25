@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Dev AI - Your Personal Terminal Assistant
-GitHub: https://github.com/Prathap2349/Dev-Ai
+Dev AI - Ocean Dark Edition
+GitHub: https://github.com/Prathap2349/dev-Ai
 """
 
 import os, sys, json, subprocess, tempfile, time, random, threading, requests, webbrowser
@@ -12,7 +12,6 @@ from groq import Groq
 from ddgs import DDGS
 from datetime import datetime
 
-# API Key
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 if not GROQ_API_KEY:
     print("\033[1;31m\n  ERROR: GROQ_API_KEY not set!\033[0m")
@@ -26,36 +25,61 @@ PERSONA_FILE = os.path.expanduser("~/.dev_persona.json")
 TODO_FILE    = os.path.expanduser("~/.dev_todos.json")
 CONFIG_FILE  = os.path.expanduser("~/.dev_config.json")
 
-RESET="\033[0m"; CYAN="\033[1;36m"; GREEN="\033[1;32m"; BLUE="\033[1;34m"
-YELLOW="\033[1;33m"; RED="\033[1;31m"; GRAY="\033[0;37m"; WHITE="\033[1;37m"
-BOLD="\033[1m"; DIM="\033[2m"
-DANGEROUS=["rm -rf","rmdir","mkfs","dd if","shutdown","reboot","chmod 777","sudo rm"]
-BOX=56
-conversation_history=[]
+# ── Ocean Dark Color Palette ──────────────────────────────────────────────────
+RESET   = "\033[0m"
+BOLD    = "\033[1m"
+DIM     = "\033[2m"
 
-_tts_proc=None
-_tts_lock=threading.Lock()
+# Ocean Dark specific colors
+NAVY    = "\033[38;2;1;22;39m"       # #011627 deep navy
+BLUE    = "\033[38;2;130;170;255m"   # #82aaff blue purple
+TEAL    = "\033[38;2;127;219;202m"   # #7fdbca teal
+WHITE   = "\033[38;2;238;255;255m"   # #eeffff near white
+MUTED   = "\033[38;2;99;119;119m"    # #637777 muted
+DARK    = "\033[38;2;29;51;84m"      # #1d3354 dark separator
+YELLOW  = "\033[38;2;255;203;107m"   # #ffcb6b warm yellow
+GREEN   = "\033[38;2;195;232;141m"   # #c3e48d soft green
+CORAL   = "\033[38;2;240;113;120m"   # #f07178 coral red
+PURPLE  = "\033[38;2;199;146;234m"   # #c792ea purple
 
-def speak(text,voice="Samantha"):
+# aliases for compatibility
+CYAN    = TEAL
+RED     = CORAL
+GRAY    = MUTED
+
+DANGEROUS = ["rm -rf","rmdir","mkfs","dd if","shutdown","reboot","chmod 777","sudo rm"]
+BOX = 58
+conversation_history = []
+
+# ── TTS ───────────────────────────────────────────────────────────────────────
+_tts_proc = None
+_tts_lock = threading.Lock()
+
+def speak(text, voice="Samantha"):
     global _tts_proc
-    clean_lines=[]
-    in_code=False
+    clean_lines = []
+    in_code = False
     for line in text.split("\n"):
         if line.startswith("```"):
-            in_code=not in_code; continue
+            in_code = not in_code
+            continue
         if not in_code:
             clean_lines.append(line)
-    clean=" ".join(clean_lines).strip()
-    if not clean: return
+    clean = " ".join(clean_lines).strip()
+    if not clean:
+        return
     with _tts_lock:
         if _tts_proc and _tts_proc.poll() is None:
-            _tts_proc.kill(); _tts_proc.wait()
+            _tts_proc.kill()
+            _tts_proc.wait()
         try:
-            _tts_proc=subprocess.Popen(["say","-v",voice,clean],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            _tts_proc = subprocess.Popen(
+                ["say", "-v", voice, clean],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except: pass
 
-def speak_wait(text,voice="Samantha"):
-    speak(text,voice)
+def speak_wait(text, voice="Samantha"):
+    speak(text, voice)
     global _tts_proc
     if _tts_proc: _tts_proc.wait()
 
@@ -63,8 +87,10 @@ def stop_speaking():
     global _tts_proc
     with _tts_lock:
         if _tts_proc and _tts_proc.poll() is None:
-            _tts_proc.kill(); _tts_proc.wait()
+            _tts_proc.kill()
+            _tts_proc.wait()
 
+# ── Config ────────────────────────────────────────────────────────────────────
 def load_config():
     if os.path.exists(CONFIG_FILE):
         try:
@@ -73,53 +99,96 @@ def load_config():
     return {}
 
 def save_config(config):
-    with open(CONFIG_FILE,"w") as f: json.dump(config,f,indent=2)
+    with open(CONFIG_FILE, "w") as f: json.dump(config, f, indent=2)
 
 def get_user_name():
-    config=load_config()
+    config = load_config()
     if config.get("name"): return config["name"]
-    print("\n"+CYAN+"  Welcome to Dev AI!"+RESET)
-    print(GRAY+"  Lets get you set up.\n"+RESET)
+    os.system("clear")
+    w = get_terminal_width()
+    print()
+    print(BLUE + "◈" * w + RESET)
+    print()
+    print(TEAL + "  Welcome to Dev AI — Ocean Dark Edition".center(w) + RESET)
+    print(MUTED + "  Let's get you set up.".center(w) + RESET)
+    print()
     while True:
-        name=input(GREEN+"  What is your name? "+RESET).strip()
+        name = input(TEAL + "  ◈ Your name: " + RESET + WHITE).strip()
+        print(RESET, end="")
         if name:
-            config["name"]=name; save_config(config)
-            print(CYAN+f"\n  Nice to meet you, {name}! Lets get started.\n"+RESET)
+            config["name"] = name
+            save_config(config)
+            print(BLUE + f"\n  Nice to meet you, {name}!\n" + RESET)
             return name
-        print(RED+"  Please enter your name."+RESET)
+        print(CORAL + "  Please enter your name." + RESET)
 
 def get_city():
-    config=load_config()
+    config = load_config()
     if config.get("city"): return config["city"]
     try:
-        r=requests.get("https://ipapi.co/city/",timeout=5)
-        city=r.text.strip()
-        if city and len(city)<50:
-            config["city"]=city; save_config(config)
+        r = requests.get("https://ipapi.co/city/", timeout=5)
+        city = r.text.strip()
+        if city and len(city) < 50:
+            config["city"] = city
+            save_config(config)
             return city
     except: pass
     return "Chennai"
 
-def set_city(new_city,voice):
-    config=load_config()
-    config["city"]=new_city; save_config(config)
-    print(GREEN+f"  City updated to: {new_city}"+RESET)
-    speak(f"City updated to {new_city}.",voice)
+def set_city(new_city, voice):
+    config = load_config()
+    config["city"] = new_city
+    save_config(config)
+    print(GREEN + f"\n  ◦ City updated to: {new_city}\n" + RESET)
+    speak(f"City updated to {new_city}.", voice)
 
-PERSONAS={
-    "dev":{"name":"Dev","emoji":"⚡","color":"\033[1;36m","voice":"Samantha","desc":"Professional coder & problem solver",
-        "prompt":"You are Dev, a professional AI assistant in the terminal on a Mac. Be concise and practical. Use code blocks for code. When user asks to open a website respond ONLY with: OPEN_URL: https://url.com — When asked to run a command respond ONLY with: RUN_CMD: the command — Only safe read-only commands."},
-    "mentor":{"name":"Mentor","emoji":"🎓","color":"\033[1;33m","voice":"Karen","desc":"Patient teacher who explains everything",
-        "prompt":"You are Mentor, a patient encouraging teacher. Explain clearly with examples. When asked to open URLs: OPEN_URL: https://url.com — When asked to run commands: RUN_CMD: command"},
-    "buddy":{"name":"Buddy","emoji":"😎","color":"\033[1;32m","voice":"Daniel","desc":"Friendly & casual coding friend",
-        "prompt":"You are Buddy, a fun friendly coding companion. Be casual, use humor, keep it helpful. When asked to open URLs: OPEN_URL: https://url.com — When asked to run commands: RUN_CMD: command"},
-    "sage":{"name":"Sage","emoji":"🧠","color":"\033[1;35m","voice":"Alex","desc":"Deep thinker for architecture & design",
-        "prompt":"You are Sage, a wise software architect. Think deeply about design and best practices. When asked to open URLs: OPEN_URL: https://url.com — When asked to run commands: RUN_CMD: command"},
-    "turbo":{"name":"Turbo","emoji":"🚀","color":"\033[1;31m","voice":"Fred","desc":"Ultra fast, no fluff, just answers",
-        "prompt":"You are Turbo, extremely fast and direct. Shortest correct answer only. When asked to open URLs: OPEN_URL: https://url.com — When asked to run commands: RUN_CMD: command"},
+# ── Personas ──────────────────────────────────────────────────────────────────
+PERSONAS = {
+    "dev": {
+        "name": "Dev", "emoji": "◈", "color": BLUE, "voice": "Samantha",
+        "desc": "Professional coder & problem solver",
+        "accent": BLUE,
+        "prompt": """You are Dev, a professional AI assistant in the terminal on a Mac.
+Be concise, accurate, and practical. Use code blocks for code.
+When user asks to open a website respond ONLY with: OPEN_URL: https://url.com
+When asked to run a command respond ONLY with: RUN_CMD: the command
+Only safe read-only commands. Never destructive."""
+    },
+    "mentor": {
+        "name": "Mentor", "emoji": "◈", "color": TEAL, "voice": "Karen",
+        "desc": "Patient teacher who explains everything",
+        "accent": TEAL,
+        "prompt": """You are Mentor, a patient encouraging teacher. Explain clearly with examples.
+When asked to open URLs: OPEN_URL: https://url.com
+When asked to run commands: RUN_CMD: command"""
+    },
+    "buddy": {
+        "name": "Buddy", "emoji": "◈", "color": GREEN, "voice": "Daniel",
+        "desc": "Friendly & casual coding friend",
+        "accent": GREEN,
+        "prompt": """You are Buddy, a fun friendly coding companion. Be casual, helpful, encouraging.
+When asked to open URLs: OPEN_URL: https://url.com
+When asked to run commands: RUN_CMD: command"""
+    },
+    "sage": {
+        "name": "Sage", "emoji": "◈", "color": PURPLE, "voice": "Alex",
+        "desc": "Deep thinker for architecture & design",
+        "accent": PURPLE,
+        "prompt": """You are Sage, a wise software architect. Think deeply about design and best practices.
+When asked to open URLs: OPEN_URL: https://url.com
+When asked to run commands: RUN_CMD: command"""
+    },
+    "turbo": {
+        "name": "Turbo", "emoji": "◈", "color": YELLOW, "voice": "Fred",
+        "desc": "Ultra fast, no fluff, just answers",
+        "accent": YELLOW,
+        "prompt": """You are Turbo, extremely fast and direct. Shortest correct answer only.
+When asked to open URLs: OPEN_URL: https://url.com
+When asked to run commands: RUN_CMD: command"""
+    },
 }
 
-SITE_MAP={
+SITE_MAP = {
     "github":"https://github.com","youtube":"https://youtube.com","google":"https://google.com",
     "twitter":"https://twitter.com","x":"https://x.com","linkedin":"https://linkedin.com",
     "stackoverflow":"https://stackoverflow.com","reddit":"https://reddit.com",
@@ -128,129 +197,308 @@ SITE_MAP={
     "replit":"https://replit.com","claude":"https://claude.ai","chatgpt":"https://chatgpt.com",
 }
 
-NEWS_CATEGORIES={
-    "1":("Technology","latest technology AI news today"),
-    "2":("Finance","finance stock market news today"),
-    "3":("Economy","economy economic news today"),
-    "4":("World","world news today top stories"),
-    "5":("India","India news today top stories"),
-    "6":("Sports","sports cricket IPL news today India"),
+NEWS_CATEGORIES = {
+    "1": ("Technology", "latest technology AI news today"),
+    "2": ("Finance",    "finance stock market news today"),
+    "3": ("Economy",    "economy economic news today"),
+    "4": ("World",      "world news today top stories"),
+    "5": ("India",      "India news today top stories"),
+    "6": ("Sports",     "sports cricket IPL news today India"),
 }
 
-def strip_ansi(t):
+# ── Ocean Dark UI Helpers ─────────────────────────────────────────────────────
+def strip_ansi(text):
     import re
-    return re.sub(r'\033\[[0-9;]*m','',t)
+    return re.sub(r'\033\[[0-9;]*m|\033\[38;2;[0-9;]*m', '', text)
 
-def box_line(content,color,box=BOX):
-    raw=strip_ansi(content)
-    pad=box-2-len(raw)
-    return color+"║"+RESET+content+" "*max(0,pad)+color+"║"+RESET
+def get_terminal_width():
+    try: return os.get_terminal_size().columns
+    except: return 100
 
+def clear_screen(): os.system("clear")
+
+def sep(w=None, char="━"):
+    """Ocean Dark em-dash style separator"""
+    if w is None: w = get_terminal_width()
+    return DARK + char * w + RESET
+
+def thin_sep(w=None):
+    if w is None: w = get_terminal_width()
+    return DARK + "─" * w + RESET
+
+def ocean_box(lines, accent=None, w=None):
+    """Draw an Ocean Dark styled box"""
+    if accent is None: accent = BLUE
+    if w is None: w = get_terminal_width()
+    bw = min(w - 4, 64)
+    pad = " " * max(0, (w - bw) // 2)
+    print()
+    print(pad + accent + "╭" + "─" * (bw - 2) + "╮" + RESET)
+    for line in lines:
+        raw = strip_ansi(line)
+        space = bw - 2 - len(raw)
+        print(pad + accent + "│" + RESET + line + " " * max(0, space) + accent + "│" + RESET)
+    print(pad + accent + "╰" + "─" * (bw - 2) + "╯" + RESET)
+    print()
+
+def type_out(text, color=TEAL, delay=0.025):
+    for ch in text:
+        print(color + ch + RESET, end="", flush=True)
+        time.sleep(delay)
+    print()
+
+def thinking_animation(stop_event):
+    frames = [
+        BLUE + "  ◈ " + MUTED + "thinking   " + RESET,
+        BLUE + "  ◈ " + MUTED + "thinking ◦ " + RESET,
+        BLUE + "  ◈ " + MUTED + "thinking ◦◦" + RESET,
+        BLUE + "  ◈ " + MUTED + "thinking ◦◦◦"+RESET,
+    ]
+    i = 0
+    while not stop_event.is_set():
+        print(f"\r{frames[i % len(frames)]}", end="", flush=True)
+        time.sleep(0.18)
+        i += 1
+    print("\r" + " " * 30 + "\r", end="", flush=True)
+
+# ── Greetings ─────────────────────────────────────────────────────────────────
+def get_greeting(user_name):
+    h = datetime.now().hour
+    tg = "Good morning" if 5<=h<12 else "Good afternoon" if 12<=h<17 else "Good evening" if 17<=h<21 else "Good night"
+    return random.choice([
+        f"{tg}, {user_name}! Ready to build something great?",
+        f"Hey {user_name}! Great to see you again.",
+        f"Welcome back, {user_name}! What are we creating today?",
+        f"{tg}, {user_name}! I am here and ready.",
+        f"Hello {user_name}! Let's make today productive.",
+        f"{tg}, {user_name}! What can I help you with?",
+    ])
+
+def get_farewell(user_name):
+    return random.choice([
+        f"Goodbye, {user_name}! Have a great day!",
+        f"See you later, {user_name}! Take care.",
+        f"Bye {user_name}! Come back anytime.",
+        f"Catch you later, {user_name}!",
+        f"Goodbye {user_name}! Stay awesome.",
+        f"Take care, {user_name}! Until next time.",
+    ])
+
+def get_datetime_line():
+    now = datetime.now()
+    return f"{now.strftime('%A, %B %d, %Y')}  ◦  {now.strftime('%I:%M %p')}"
+
+# ── Persona helpers ───────────────────────────────────────────────────────────
 def load_persona():
     if os.path.exists(PERSONA_FILE):
         try:
-            with open(PERSONA_FILE) as f: return json.load(f).get("persona","dev")
+            with open(PERSONA_FILE) as f: return json.load(f).get("persona", "dev")
         except: return "dev"
     return "dev"
 
 def save_persona(name):
-    with open(PERSONA_FILE,"w") as f: json.dump({"persona":name},f)
+    with open(PERSONA_FILE, "w") as f: json.dump({"persona": name}, f)
 
-def get_terminal_width():
-    try: return os.get_terminal_size().columns
-    except: return 80
+# ── Splash Screen ─────────────────────────────────────────────────────────────
+def splash_screen(returning=False, msg_count=0, current_persona="dev", user_name="Friend"):
+    clear_screen()
+    w  = get_terminal_width()
+    p  = PERSONAS[current_persona]
+    ac = p["accent"]
 
-def get_greeting(n):
-    h=datetime.now().hour
-    tg="Good morning" if 5<=h<12 else "Good afternoon" if 12<=h<17 else "Good evening" if 17<=h<21 else "Good night"
-    return random.choice([f"{tg}, {n}! Ready to get things done?",f"Hey {n}! Great to see you again.",
-        f"Welcome back, {n}! What are we building today?",f"{tg}, {n}! I am here and ready.",
-        f"Hello {n}! Lets make today productive.",f"{tg}, {n}! What can I help you with?"])
-
-def get_farewell(n):
-    return random.choice([f"Goodbye, {n}! Have a great day!",f"See you later, {n}! Take care.",
-        f"Bye {n}! Come back anytime.",f"Catch you later, {n}!",
-        f"Goodbye {n}! Stay awesome.",f"Take care, {n}! Until next time."])
-
-def get_datetime_line():
-    now=datetime.now()
-    return f"{now.strftime('%A')}, {now.strftime('%B %d, %Y')}  |  {now.strftime('%I:%M %p')}"
-
-def clear_screen(): os.system("clear")
-
-def type_out(text,color=CYAN,delay=0.03):
-    for ch in text:
-        print(color+ch+RESET,end="",flush=True)
-        time.sleep(delay)
+    # top separator
+    print()
+    print(DARK + "━" * w + RESET)
     print()
 
+    # logo
+    logo = [
+        "██████╗ ███████╗██╗   ██╗",
+        "██╔══██╗██╔════╝██║   ██║",
+        "██║  ██║█████╗  ██║   ██║",
+        "██║  ██║██╔══╝  ╚██╗ ██╔╝",
+        "██████╔╝███████╗ ╚████╔╝ ",
+        "╚═════╝ ╚══════╝  ╚═══╝  ",
+    ]
+    for line in logo:
+        print(ac + line.center(w) + RESET)
+
+    print()
+    print(MUTED + f"{'Professional AI Terminal Assistant'.center(w)}" + RESET)
+    print(MUTED + f"{'Powered by Groq  ◦  llama-3.3-70b'.center(w)}" + RESET)
+    print()
+    print(DARK + "━" * w + RESET)
+    print()
+
+    # datetime + persona
+    print(MUTED + get_datetime_line().center(w) + RESET)
+    print()
+    persona_line = f"{p['emoji']} {p['name']}  ◦  {p['desc']}"
+    print(ac + persona_line.center(w) + RESET)
+    print()
+    print(DARK + "━" * w + RESET)
+    print()
+
+    # greeting
+    greeting = get_greeting(user_name)
+    g_pad = " " * max(0, (w - len(greeting)) // 2)
+    type_out(g_pad + greeting, TEAL, 0.025)
+
+    if returning:
+        print(MUTED + f"  I remember {msg_count} past messages.".center(w) + RESET)
+
+    print()
+    print(DARK + "━" * w + RESET)
+    print()
+
+    # command menu — two columns
+    items = [
+        ("~  v",              "voice input"),
+        ("~  search: x",      "web search"),
+        ("~  open <site>",    "open website"),
+        ("~  todo",           "to-do list"),
+        ("~  git <cmd>",      "git helper"),
+        ("~  persona",        "switch persona"),
+        ("~  briefing",       "daily briefing"),
+        ("~  read <file>",    "read & explain file"),
+        ("~  city <name>",    "change city"),
+        ("~  history",        "past chats"),
+        ("~  clear memory",   "forget everything"),
+        ("~  exit",           "quit"),
+    ]
+    col_w = max(len(strip_ansi(f"  {c}")) for c, _ in items) + 4
+    mid   = len(items) // 2
+    left  = items[:mid]
+    right = items[mid:]
+    pad   = " " * max(0, (w - col_w * 2 - 4) // 2)
+
+    for i in range(max(len(left), len(right))):
+        l_cmd, l_desc = left[i]  if i < len(left)  else ("", "")
+        r_cmd, r_desc = right[i] if i < len(right) else ("", "")
+        l = f"  {YELLOW}{l_cmd:<18}{RESET}{MUTED}{l_desc}{RESET}" if l_cmd else ""
+        r = f"  {YELLOW}{r_cmd:<18}{RESET}{MUTED}{r_desc}{RESET}" if r_cmd else ""
+        l_raw = f"  {l_cmd:<18}{l_desc}" if l_cmd else ""
+        r_raw = f"  {r_cmd:<18}{r_desc}" if r_cmd else ""
+        l_pad = " " * max(0, col_w - len(l_raw))
+        print(pad + l + l_pad + r)
+
+    print()
+    print(DARK + "━" * w + RESET)
+    print()
+
+    # loading
+    for i in range(5):
+        bar = BLUE + "◈" * i + MUTED + "◦" * (4-i) + RESET
+        print(f"\r  {bar}  {MUTED}loading...{RESET}", end="", flush=True)
+        time.sleep(0.12)
+    print(f"\r  {BLUE}◈◈◈◈{RESET}  {TEAL}ready!{RESET}          ")
+    print()
+
+    speak_wait(greeting, p["voice"])
+
+# ── Farewell ──────────────────────────────────────────────────────────────────
+def farewell(user_name, voice):
+    msg = get_farewell(user_name)
+    w   = get_terminal_width()
+    print()
+    print(DARK + "━" * w + RESET)
+    print()
+    type_out(" " * max(0, (w - len(msg)) // 2) + msg, TEAL, 0.035)
+    print()
+    print(DARK + "━" * w + RESET)
+    speak_wait(msg, voice)
+    print()
+
+# ── Weather & News ────────────────────────────────────────────────────────────
 def get_weather(city):
     try:
-        r=requests.get(f"https://wttr.in/{city}?format=%C+%t+Humidity:%h+Wind:%w",timeout=6)
+        r = requests.get(f"https://wttr.in/{city}?format=%C+%t+Humidity:%h+Wind:%w", timeout=6)
         return r.text.strip()
     except: return "Weather unavailable"
 
 def get_top_news(query="top news India today"):
     try:
         with DDGS() as ddgs:
-            results=list(ddgs.news(query,max_results=4))
+            results = list(ddgs.news(query, max_results=4))
         if not results: return []
-        return [{"title":r.get("title","")[:55],"body":r.get("body","")[:100],"source":r.get("source","")} for r in results]
+        return [{"title": r.get("title","")[:55], "body": r.get("body","")[:100], "source": r.get("source","")} for r in results]
     except: return []
 
-def pick_news_category(pc,voice):
-    w=get_terminal_width()
-    pad=" "*max(0,(w-BOX)//2)
+def pick_news_category(voice):
+    w   = get_terminal_width()
+    ac  = BLUE
+    bw  = min(w - 4, 62)
+    pad = " " * max(0, (w - bw) // 2)
     print()
-    print(pad+pc+"╔"+"═"*(BOX-2)+"╗"+RESET)
-    print(pad+box_line(f"  {YELLOW}Pick your news category:{RESET}",pc))
-    print(pad+pc+"╠"+"═"*(BOX-2)+"╣"+RESET)
-    for key,(name,_) in NEWS_CATEGORIES.items():
-        print(pad+box_line(f"  {YELLOW}{key}.{RESET}  {name}",pc))
-    print(pad+pc+"╚"+"═"*(BOX-2)+"╝"+RESET)
+    print(pad + ac + "╭" + "─" * (bw-2) + "╮" + RESET)
+    print(pad + ac + "│" + TEAL + "  Pick your news category".center(bw-2) + RESET + ac + "│" + RESET)
+    print(pad + ac + "├" + "─" * (bw-2) + "┤" + RESET)
+    for key, (name, _) in NEWS_CATEGORIES.items():
+        row = f"  {YELLOW}{key}.{RESET}  {WHITE}{name}{RESET}"
+        raw = f"  {key}.  {name}"
+        sp  = bw - 2 - len(raw)
+        print(pad + ac + "│" + RESET + row + " " * max(0, sp) + ac + "│" + RESET)
+    print(pad + ac + "╰" + "─" * (bw-2) + "╯" + RESET)
     print()
-    speak("What type of news would you like? Technology, Finance, Economy, World, India, or Sports?",voice)
-    choice=input(f"  {YELLOW}Pick 1-6 (or Enter for India):{RESET} ").strip()
+    speak("What type of news would you like? Technology, Finance, Economy, World, India, or Sports?", voice)
+    choice = input(BLUE + "  ◈ Pick 1-6 (Enter for India): " + RESET + WHITE).strip()
+    print(RESET, end="")
     if choice in NEWS_CATEGORIES:
-        name,query=NEWS_CATEGORIES[choice]
-        speak(f"Getting {name} news.",voice)
-        return name,query
-    return "India","India top news today"
+        name, query = NEWS_CATEGORIES[choice]
+        speak(f"Getting {name} news.", voice)
+        return name, query
+    return "India", "India top news today"
 
-def morning_briefing(pc,voice,user_name,city):
-    w=get_terminal_width()
-    pad=" "*max(0,(w-BOX)//2)
-    now=datetime.now()
-    category_name,news_query=pick_news_category(pc,voice)
+def morning_briefing(voice, user_name, city, accent=BLUE):
+    w   = get_terminal_width()
+    ac  = accent
+    bw  = min(w - 4, 64)
+    pad = " " * max(0, (w - bw) // 2)
+    now = datetime.now()
+
+    category_name, news_query = pick_news_category(voice)
+
+    weather = get_weather(city)
+    news    = get_top_news(news_query)
+
     print()
-    print(pad+pc+"╔"+"═"*(BOX-2)+"╗"+RESET)
-    print(pad+box_line(f"  {YELLOW}Daily Briefing — {user_name}!{RESET}",pc))
-    print(pad+pc+"╠"+"═"*(BOX-2)+"╣"+RESET)
-    print(pad+box_line(f"  {YELLOW}Date   {RESET}{now.strftime('%A, %B %d, %Y')}",pc))
-    print(pad+box_line(f"  {YELLOW}Time   {RESET}{now.strftime('%I:%M %p')}",pc))
-    print(pad+pc+"╠"+"═"*(BOX-2)+"╣"+RESET)
-    print(pad+box_line(f"  {YELLOW}Weather in {city}{RESET}",pc))
-    weather=get_weather(city)
-    print(pad+box_line(f"  {weather}",pc))
-    print(pad+pc+"╠"+"═"*(BOX-2)+"╣"+RESET)
-    print(pad+box_line(f"  {YELLOW}Top {category_name} News{RESET}",pc))
-    print(pad+pc+"║"+" "*(BOX-2)+"║"+RESET)
-    news=get_top_news(news_query)
+    print(pad + ac + "╭" + "─" * (bw-2) + "╮" + RESET)
+
+    def bline(content, a=ac, bwidth=bw):
+        raw = strip_ansi(content)
+        sp  = bwidth - 2 - len(raw)
+        return pad + a + "│" + RESET + content + " " * max(0, sp) + a + "│" + RESET
+
+    print(bline(f"  {TEAL}Daily Briefing{RESET}  {MUTED}◦{RESET}  {WHITE}{user_name}{RESET}"))
+    print(pad + ac + "├" + "─" * (bw-2) + "┤" + RESET)
+    print(bline(f"  {MUTED}Date{RESET}   {WHITE}{now.strftime('%A, %B %d, %Y')}{RESET}"))
+    print(bline(f"  {MUTED}Time{RESET}   {WHITE}{now.strftime('%I:%M %p')}{RESET}"))
+    print(pad + ac + "├" + "─" * (bw-2) + "┤" + RESET)
+    print(bline(f"  {TEAL}Weather in {city}{RESET}"))
+    print(bline(f"  {WHITE}{weather}{RESET}"))
+    print(pad + ac + "├" + "─" * (bw-2) + "┤" + RESET)
+    print(bline(f"  {TEAL}Top {category_name} News{RESET}"))
+    print(pad + ac + "│" + " " * (bw-2) + "│" + RESET)
+
     if news:
-        for i,item in enumerate(news[:3],1):
-            print(pad+box_line(f"  {i}. {item['title']}",pc))
-            for chunk in [item['body'][j:j+50] for j in range(0,len(item['body']),50)]:
-                print(pad+box_line(f"     {chunk.strip()}",pc))
-            print(pad+box_line(f"     Source: {item['source']}",pc))
-            if i<3: print(pad+pc+"║"+DIM+"─"*(BOX-2)+RESET+pc+"║"+RESET)
+        for i, item in enumerate(news[:3], 1):
+            print(bline(f"  {YELLOW}{i}.{RESET} {WHITE}{item['title']}{RESET}"))
+            for chunk in [item['body'][j:j+52] for j in range(0, len(item['body']), 52)]:
+                print(bline(f"     {MUTED}{chunk.strip()}{RESET}"))
+            print(bline(f"     {DARK}◦ {item['source']}{RESET}"))
+            if i < 3:
+                print(pad + ac + "│" + DARK + "╌" * (bw-2) + RESET + ac + "│" + RESET)
     else:
-        print(pad+box_line("  News unavailable right now.",pc))
-    print(pad+pc+"╚"+"═"*(BOX-2)+"╝"+RESET)
-    print()
-    speak_wait(f"Here is your briefing. Today is {now.strftime('%A %B %d')}. Weather in {city}: {weather}.",voice)
-    if news:
-        speak(f"Top {category_name} news: {news[0]['title']}. {news[0]['body']}",voice)
+        print(bline(f"  {MUTED}News unavailable right now.{RESET}"))
 
+    print(pad + ac + "╰" + "─" * (bw-2) + "╯" + RESET)
+    print()
+
+    speak_wait(f"Here is your briefing. Today is {now.strftime('%A %B %d')}. Weather in {city}: {weather}.", voice)
+    if news:
+        speak(f"Top {category_name} news: {news[0]['title']}.", voice)
+
+# ── To-Do List ────────────────────────────────────────────────────────────────
 def load_todos():
     if os.path.exists(TODO_FILE):
         try:
@@ -259,230 +507,228 @@ def load_todos():
     return []
 
 def save_todos(todos):
-    with open(TODO_FILE,"w") as f: json.dump(todos,f,indent=2)
+    with open(TODO_FILE, "w") as f: json.dump(todos, f, indent=2)
 
-def show_todos(pc):
-    todos=load_todos()
-    w=get_terminal_width()
-    pad=" "*max(0,(w-BOX)//2)
+def show_todos(accent=BLUE):
+    todos = load_todos()
+    w     = get_terminal_width()
+    ac    = accent
+    bw    = min(w - 4, 62)
+    pad   = " " * max(0, (w - bw) // 2)
+
+    def bline(content):
+        raw = strip_ansi(content)
+        sp  = bw - 2 - len(raw)
+        return pad + ac + "│" + RESET + content + " " * max(0, sp) + ac + "│" + RESET
+
     print()
-    print(pad+pc+"╔"+"═"*(BOX-2)+"╗"+RESET)
-    print(pad+box_line(f"  {YELLOW}My To-Do List{RESET}",pc))
-    print(pad+pc+"╠"+"═"*(BOX-2)+"╣"+RESET)
+    print(pad + ac + "╭" + "─" * (bw-2) + "╮" + RESET)
+    print(bline(f"  {TEAL}To-Do List{RESET}"))
+    print(pad + ac + "├" + "─" * (bw-2) + "┤" + RESET)
+
     if not todos:
-        print(pad+box_line("  No tasks yet! Type: todo add <task>",pc))
+        print(bline(f"  {MUTED}No tasks yet.  Type: todo add <task>{RESET}"))
     else:
-        for i,t in enumerate(todos,1):
-            status=GREEN+"✓"+RESET if t["done"] else GRAY+"○"+RESET
-            date=GRAY+f" ({t.get('date','')})" +RESET if t.get("date") else ""
-            print(pad+box_line(f"  {status} {i}. {t['task'][:40]}{date}",pc))
-    print(pad+pc+"╠"+"═"*(BOX-2)+"╣"+RESET)
-    done=sum(1 for t in todos if t["done"])
-    total=len(todos)
-    print(pad+box_line(f"  {GREEN}{done} done{RESET}  |  {YELLOW}{total-done} remaining{RESET}  |  {total} total",pc))
-    print(pad+pc+"╚"+"═"*(BOX-2)+"╝"+RESET)
+        for i, t in enumerate(todos, 1):
+            status = GREEN + "✓" + RESET if t["done"] else MUTED + "◦" + RESET
+            date   = MUTED + f" ({t.get('date','')})" + RESET if t.get("date") else ""
+            task   = (WHITE if not t["done"] else MUTED) + t['task'][:44] + RESET
+            print(bline(f"  {status} {i}. {task}{date}"))
+
+    print(pad + ac + "├" + "─" * (bw-2) + "┤" + RESET)
+    done  = sum(1 for t in todos if t["done"])
+    total = len(todos)
+    bar_done = int((done / total * 20) if total else 0)
+    bar  = GREEN + "█" * bar_done + DARK + "░" * (20 - bar_done) + RESET
+    print(bline(f"  {bar}  {GREEN}{done}{RESET} done  {MUTED}◦{RESET}  {YELLOW}{total-done}{RESET} left"))
+    print(pad + ac + "╰" + "─" * (bw-2) + "╯" + RESET)
     print()
 
-def handle_todo(cmd,pc,voice):
-    parts=cmd.strip().split(" ",2)
-    action=parts[1].lower() if len(parts)>1 else "list"
-    todos=load_todos()
-    if action=="list" or len(parts)==1:
-        show_todos(pc)
-    elif action=="add" and len(parts)==3:
-        task=parts[2]
-        date=datetime.now().strftime("%b %d")
-        todos.append({"task":task,"done":False,"date":date})
+def handle_todo(cmd, accent, voice):
+    parts  = cmd.strip().split(" ", 2)
+    action = parts[1].lower() if len(parts) > 1 else "list"
+    todos  = load_todos()
+
+    if action == "list" or len(parts) == 1:
+        show_todos(accent)
+    elif action == "add" and len(parts) == 3:
+        task = parts[2]
+        date = datetime.now().strftime("%b %d")
+        todos.append({"task": task, "done": False, "date": date})
         save_todos(todos)
-        print(GREEN+f"\n  Added: {task}\n"+RESET)
-        speak(f"Task added: {task}",voice)
-        show_todos(pc)
-    elif action=="done" and len(parts)==3:
+        print(GREEN + f"\n  ◦ Added: {task}\n" + RESET)
+        speak(f"Task added: {task}", voice)
+        show_todos(accent)
+    elif action in ("done", "undone", "delete") and len(parts) == 3:
         try:
-            idx=int(parts[2])-1
-            if 0<=idx<len(todos):
-                todos[idx]["done"]=True; save_todos(todos)
-                print(GREEN+f"\n  Done: {todos[idx]['task']}\n"+RESET)
-                speak(f"Marked done: {todos[idx]['task']}",voice)
-                show_todos(pc)
-            else: print(RED+f"  No task number {parts[2]}."+RESET)
-        except ValueError: print(RED+"  Use: todo done <number>"+RESET)
-    elif action=="undone" and len(parts)==3:
-        try:
-            idx=int(parts[2])-1
-            if 0<=idx<len(todos):
-                todos[idx]["done"]=False; save_todos(todos)
-                print(YELLOW+f"\n  Unmarked: {todos[idx]['task']}\n"+RESET)
-                show_todos(pc)
-            else: print(RED+f"  No task number {parts[2]}."+RESET)
-        except ValueError: print(RED+"  Use: todo undone <number>"+RESET)
-    elif action=="delete" and len(parts)==3:
-        try:
-            idx=int(parts[2])-1
-            if 0<=idx<len(todos):
-                removed=todos.pop(idx); save_todos(todos)
-                print(RED+f"\n  Deleted: {removed['task']}\n"+RESET)
-                show_todos(pc)
-            else: print(RED+f"  No task number {parts[2]}."+RESET)
-        except ValueError: print(RED+"  Use: todo delete <number>"+RESET)
-    elif action=="clear":
-        confirm=input(YELLOW+"  Clear all tasks? (y/n): "+RESET).strip().lower()
-        if confirm=="y":
-            save_todos([]); print(CYAN+"  All tasks cleared."+RESET)
+            idx = int(parts[2]) - 1
+            if 0 <= idx < len(todos):
+                if action == "done":
+                    todos[idx]["done"] = True
+                    save_todos(todos)
+                    print(GREEN + f"\n  ✓ Done: {todos[idx]['task']}\n" + RESET)
+                    speak(f"Marked done: {todos[idx]['task']}", voice)
+                elif action == "undone":
+                    todos[idx]["done"] = False
+                    save_todos(todos)
+                    print(YELLOW + f"\n  ◦ Unmarked: {todos[idx]['task']}\n" + RESET)
+                elif action == "delete":
+                    removed = todos.pop(idx)
+                    save_todos(todos)
+                    print(CORAL + f"\n  ✕ Deleted: {removed['task']}\n" + RESET)
+                show_todos(accent)
+            else:
+                print(CORAL + f"  No task #{parts[2]}." + RESET)
+        except ValueError:
+            print(CORAL + f"  Use: todo {action} <number>" + RESET)
+    elif action == "clear":
+        confirm = input(YELLOW + "  Clear all tasks? (y/n): " + RESET).strip().lower()
+        if confirm == "y":
+            save_todos([])
+            print(TEAL + "  All tasks cleared." + RESET)
     else:
-        print(f"\n  {YELLOW}todo{RESET}               -> show list")
-        print(f"  {YELLOW}todo add <task>{RESET}    -> add task")
-        print(f"  {YELLOW}todo done <n>{RESET}      -> mark done")
-        print(f"  {YELLOW}todo undone <n>{RESET}    -> unmark done")
-        print(f"  {YELLOW}todo delete <n>{RESET}    -> delete task")
-        print(f"  {YELLOW}todo clear{RESET}         -> clear all\n")
+        print()
+        print(f"  {YELLOW}todo{RESET}               {MUTED}◦ show list{RESET}")
+        print(f"  {YELLOW}todo add <task>{RESET}    {MUTED}◦ add task{RESET}")
+        print(f"  {YELLOW}todo done <n>{RESET}      {MUTED}◦ mark done{RESET}")
+        print(f"  {YELLOW}todo undone <n>{RESET}    {MUTED}◦ unmark done{RESET}")
+        print(f"  {YELLOW}todo delete <n>{RESET}    {MUTED}◦ delete task{RESET}")
+        print(f"  {YELLOW}todo clear{RESET}         {MUTED}◦ clear all{RESET}")
+        print()
 
-def git_helper(cmd,pc,voice,persona_key):
-    parts=cmd.strip().split(" ",1)
-    action=parts[1].lower() if len(parts)>1 else "help"
-    if action=="status":
-        r=subprocess.run("git status --short",shell=True,capture_output=True,text=True)
-        print(YELLOW+"\n  Git Status:\n"+RESET)
-        for line in (r.stdout.strip() or "Nothing to commit.").split("\n"): print(f"  {line}")
+# ── Git Helper ────────────────────────────────────────────────────────────────
+def git_helper(cmd, accent, voice, persona_key):
+    parts  = cmd.strip().split(" ", 1)
+    action = parts[1].lower() if len(parts) > 1 else "help"
+
+    if action == "status":
+        r = subprocess.run("git status --short", shell=True, capture_output=True, text=True)
         print()
-    elif action=="log":
-        r=subprocess.run("git log --oneline -5",shell=True,capture_output=True,text=True)
-        print(YELLOW+"\n  Recent Commits:\n"+RESET)
-        for line in (r.stdout.strip() or "No commits yet.").split("\n"): print(f"  {line}")
+        print(YELLOW + "  ◦ Git Status" + RESET)
+        print(DARK + "  " + "─" * 40 + RESET)
+        for line in (r.stdout.strip() or "Nothing to commit.").split("\n"):
+            print(f"  {WHITE}{line}{RESET}")
         print()
-    elif action=="commit":
-        r=subprocess.run("git status --short",shell=True,capture_output=True,text=True)
-        status=r.stdout.strip()
+    elif action == "log":
+        r = subprocess.run("git log --oneline -5", shell=True, capture_output=True, text=True)
+        print()
+        print(YELLOW + "  ◦ Recent Commits" + RESET)
+        print(DARK + "  " + "─" * 40 + RESET)
+        for line in (r.stdout.strip() or "No commits yet.").split("\n"):
+            print(f"  {WHITE}{line}{RESET}")
+        print()
+    elif action == "commit":
+        r = subprocess.run("git status --short", shell=True, capture_output=True, text=True)
+        status = r.stdout.strip()
         if not status:
-            print(CYAN+"  Nothing to commit."+RESET); return
-        print(CYAN+"\n  Generating commit message..."+RESET)
-        response=client.chat.completions.create(
+            print(TEAL + "  ◦ Nothing to commit." + RESET); return
+        print(MUTED + "\n  ◦ Generating commit message...\n" + RESET)
+        response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role":"user","content":f"Write a short git commit message using conventional commits. Only output the message.\n\nGit status:\n{status}"}],
+            messages=[{"role": "user", "content": f"Write a short git commit message using conventional commits. Only output the message.\n\nGit status:\n{status}"}],
             max_tokens=60)
-        msg=response.choices[0].message.content.strip().strip('"')
-        print(YELLOW+f"\n  Suggested: {msg}"+RESET)
-        confirm=input(f"\n  {GREEN}Use this? (y/n/edit):{RESET} ").strip().lower()
-        if confirm=="y":
-            subprocess.run(f'git add -A && git commit -m "{msg}"',shell=True)
-            print(GREEN+"  Committed!"+RESET); speak(f"Committed: {msg}",voice)
-        elif confirm=="edit":
-            custom=input(f"  {YELLOW}Your message:{RESET} ").strip()
+        msg = response.choices[0].message.content.strip().strip('"')
+        print(BLUE + f"  ◈ Suggested: {WHITE}{msg}{RESET}")
+        confirm = input(TEAL + f"\n  ◦ Use this? (y/n/edit): " + RESET + WHITE).strip().lower()
+        print(RESET, end="")
+        if confirm == "y":
+            subprocess.run(f'git add -A && git commit -m "{msg}"', shell=True)
+            print(GREEN + "  ✓ Committed!" + RESET)
+            speak(f"Committed: {msg}", voice)
+        elif confirm == "edit":
+            custom = input(TEAL + "  ◦ Your message: " + RESET + WHITE).strip()
+            print(RESET, end="")
             if custom:
-                subprocess.run(f'git add -A && git commit -m "{custom}"',shell=True)
-                print(GREEN+"  Committed!"+RESET)
-        else: print(CYAN+"  Cancelled."+RESET)
-    elif action=="push":
-        r=subprocess.run("git push",shell=True,capture_output=True,text=True)
-        print(YELLOW+(r.stdout or r.stderr).strip()+RESET); speak("Push complete.",voice)
-    elif action=="pull":
-        r=subprocess.run("git pull",shell=True,capture_output=True,text=True)
-        print(YELLOW+(r.stdout or r.stderr).strip()+RESET); speak("Pull complete.",voice)
+                subprocess.run(f'git add -A && git commit -m "{custom}"', shell=True)
+                print(GREEN + "  ✓ Committed!" + RESET)
+        else:
+            print(MUTED + "  Cancelled." + RESET)
+    elif action == "push":
+        r = subprocess.run("git push", shell=True, capture_output=True, text=True)
+        print(WHITE + (r.stdout or r.stderr).strip() + RESET)
+        speak("Push complete.", voice)
+    elif action == "pull":
+        r = subprocess.run("git pull", shell=True, capture_output=True, text=True)
+        print(WHITE + (r.stdout or r.stderr).strip() + RESET)
+        speak("Pull complete.", voice)
     elif action.startswith("explain "):
-        git_cmd=action[8:].strip()
-        response=client.chat.completions.create(
+        git_cmd = action[8:].strip()
+        response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role":"user","content":f"Explain 'git {git_cmd}' in 2 simple sentences. No markdown."}],
+            messages=[{"role": "user", "content": f"Explain 'git {git_cmd}' in 2 simple sentences. No markdown."}],
             max_tokens=100)
-        explanation=response.choices[0].message.content.strip()
-        print(BLUE+f"\n  {explanation}\n"+RESET); speak(explanation,voice)
+        explanation = response.choices[0].message.content.strip()
+        print()
+        print(DARK + "  " + "─" * 50 + RESET)
+        print(f"  {WHITE}{explanation}{RESET}")
+        print(DARK + "  " + "─" * 50 + RESET)
+        print()
+        speak(explanation, voice)
     else:
-        print(f"\n  {YELLOW}git status{RESET}          -> changed files")
-        print(f"  {YELLOW}git log{RESET}             -> recent commits")
-        print(f"  {YELLOW}git commit{RESET}          -> AI commit message")
-        print(f"  {YELLOW}git push / pull{RESET}     -> push or pull")
-        print(f"  {YELLOW}git explain <cmd>{RESET}   -> explain command\n")
+        print()
+        print(f"  {YELLOW}git status{RESET}          {MUTED}◦ changed files{RESET}")
+        print(f"  {YELLOW}git log{RESET}             {MUTED}◦ recent commits{RESET}")
+        print(f"  {YELLOW}git commit{RESET}          {MUTED}◦ AI commit message{RESET}")
+        print(f"  {YELLOW}git push / pull{RESET}     {MUTED}◦ push or pull{RESET}")
+        print(f"  {YELLOW}git explain <cmd>{RESET}   {MUTED}◦ explain command{RESET}")
+        print()
 
-def show_personas(current,user_name):
-    keys=list(PERSONAS.keys())
+# ── Persona Menu ──────────────────────────────────────────────────────────────
+def show_personas(current, user_name):
+    keys = list(PERSONAS.keys())
+    w    = get_terminal_width()
+    bw   = min(w - 4, 62)
+    pad  = " " * max(0, (w - bw) // 2)
+
+    def bline(content, a=BLUE):
+        raw = strip_ansi(content)
+        sp  = bw - 2 - len(raw)
+        return pad + a + "│" + RESET + content + " " * max(0, sp) + a + "│" + RESET
+
     print()
-    print(CYAN+"  ╔══════════════════════════════════════════════════╗"+RESET)
-    print(CYAN+"  ║             Switch AI Persona                    ║"+RESET)
-    print(CYAN+"  ╠══════════════════════════════════════════════════╣"+RESET)
-    for i,key in enumerate(keys,1):
-        p=PERSONAS[key]
-        active=GREEN+" ✓"+RESET if key==current else "  "
-        print(CYAN+"  ║"+RESET+YELLOW+f"  {i}. {p['emoji']}  {p['name']:<10}"+RESET+f"{p['desc']:<26}"+GRAY+f" {p['voice']:<10}"+RESET+active+CYAN+"║"+RESET)
-    print(CYAN+"  ╚══════════════════════════════════════════════════╝"+RESET)
+    print(pad + BLUE + "╭" + "─" * (bw-2) + "╮" + RESET)
+    print(bline(f"  {TEAL}Switch AI Persona{RESET}"))
+    print(pad + BLUE + "├" + "─" * (bw-2) + "┤" + RESET)
+
+    for i, key in enumerate(keys, 1):
+        p      = PERSONAS[key]
+        active = GREEN + " ✓" + RESET if key == current else ""
+        row    = f"  {p['accent']}{i}. {p['emoji']} {p['name']:<10}{RESET}{MUTED}{p['desc']:<28}{RESET}{GRAY}{p['voice']:<12}{RESET}{active}"
+        print(bline(row))
+
+    print(pad + BLUE + "╰" + "─" * (bw-2) + "╯" + RESET)
     print()
+
     while True:
-        choice=input(f"  {YELLOW}Pick 1-{len(keys)} or Enter to cancel:{RESET} ").strip()
-        if choice=="": return current
-        if choice.isdigit() and 1<=int(choice)<=len(keys):
-            chosen=keys[int(choice)-1]; p=PERSONAS[chosen]
-            print(p["color"]+f"\n  Switched to {p['emoji']} {p['name']} — {p['desc']}"+RESET)
-            print(GRAY+f"  Voice: {p['voice']}\n"+RESET)
-            speak(f"Hi {user_name}! I am {p['name']}. {p['desc']}.",p["voice"])
+        choice = input(BLUE + f"  ◈ Pick 1-{len(keys)} or Enter to cancel: " + RESET + WHITE).strip()
+        print(RESET, end="")
+        if choice == "": return current
+        if choice.isdigit() and 1 <= int(choice) <= len(keys):
+            chosen = keys[int(choice) - 1]
+            p = PERSONAS[chosen]
+            print()
+            print(p["accent"] + f"  ◈ Switched to {p['name']} — {p['desc']}" + RESET)
+            print(MUTED + f"  ◦ Voice: {p['voice']}\n" + RESET)
+            speak(f"Hi {user_name}! I am {p['name']}. {p['desc']}.", p["voice"])
             return chosen
-        print(RED+f"  Invalid. Enter 1-{len(keys)}."+RESET)
+        print(CORAL + f"  Invalid. Enter 1-{len(keys)}." + RESET)
 
+# ── Open URL ──────────────────────────────────────────────────────────────────
 def open_url(url_or_name):
-    name=url_or_name.lower().strip()
-    for key,url in SITE_MAP.items():
+    name = url_or_name.lower().strip()
+    for key, url in SITE_MAP.items():
         if key in name:
-            print(GREEN+f"  Opening {key.capitalize()}..."+RESET)
+            print(GREEN + f"\n  ◦ Opening {key.capitalize()}...\n" + RESET)
             webbrowser.open(url)
             return f"Opened {key.capitalize()}"
     if name.startswith("http"):
         webbrowser.open(url_or_name)
         return f"Opened {url_or_name}"
-    url=f"https://{name}" if "." in name else f"https://www.google.com/search?q={name}"
+    url = f"https://{name}" if "." in name else f"https://www.google.com/search?q={name}"
     webbrowser.open(url)
     return f"Opened {url}"
 
-def splash_screen(returning=False,msg_count=0,current_persona="dev",user_name="Friend"):
-    clear_screen()
-    w=get_terminal_width(); p=PERSONAS[current_persona]; pc=p["color"]
-    logo=["██████╗ ███████╗██╗   ██╗","██╔══██╗██╔════╝██║   ██║","██║  ██║█████╗  ██║   ██║",
-          "██║  ██║██╔══╝  ╚██╗ ██╔╝","██████╔╝███████╗ ╚████╔╝ ","╚═════╝ ╚══════╝  ╚═══╝  "]
-    bw=58; pad=" "*max(0,(w-bw)//2)
-    print()
-    print(pad+pc+"╔"+"═"*(bw-2)+"╗"+RESET)
-    print(pad+pc+"║"+" "*(bw-2)+"║"+RESET)
-    for line in logo:
-        print(pad+pc+"║"+WHITE+line.center(bw-2)+RESET+pc+"║"+RESET)
-    print(pad+pc+"║"+" "*(bw-2)+"║"+RESET)
-    print(pad+pc+"║"+GREEN+f"{p['emoji']}  {p['name']}  |  {p['desc']}".center(bw-2)+RESET+pc+"║"+RESET)
-    print(pad+pc+"║"+DIM+GRAY+"Powered by Groq  |  llama-3.3-70b".center(bw-2)+RESET+pc+"║"+RESET)
-    print(pad+pc+"║"+" "*(bw-2)+"║"+RESET)
-    print(pad+pc+"╚"+"═"*(bw-2)+"╝"+RESET)
-    print()
-    print(GRAY+get_datetime_line().center(w)+RESET)
-    print()
-    time.sleep(0.2)
-    greeting=get_greeting(user_name)
-    g_pad=" "*max(0,(w-len(greeting))//2)
-    type_out(g_pad+greeting,GREEN,0.03)
-    if returning:
-        print(DIM+GRAY+f"I remember {msg_count} past messages.".center(w)+RESET)
-    print()
-    mw=58; m_pad=" "*max(0,(w-mw)//2)
-    print(m_pad+pc+"┌"+"─"*(mw-2)+"┐"+RESET)
-    items=[("v","voice input (6 sec)"),("search: x","search the web"),("open <site>","open a website"),
-           ("todo","manage to-do list"),("git <cmd>","git helper"),("persona","switch AI persona + voice"),
-           ("briefing","daily news briefing"),("city <name>","change your city"),
-           ("history","see past chats"),("clear memory","forget everything"),("exit","quit")]
-    for cmd,desc in items:
-        rr=" "*max(0,mw-2-len(cmd)-len(desc)-8)
-        print(m_pad+pc+"│"+RESET+YELLOW+f"  {cmd:<18}"+RESET+f"->  {desc}"+rr+pc+"│"+RESET)
-    print(m_pad+pc+"└"+"─"*(mw-2)+"┘"+RESET)
-    print()
-    for i in range(4):
-        print(f"\r  {GRAY}Loading{'.'*i}   {RESET}",end="",flush=True)
-        time.sleep(0.15)
-    print(f"\r  {GREEN}Ready!{RESET}          ")
-    print()
-    speak_wait(greeting,p["voice"])
-
-def farewell(user_name,voice):
-    msg=get_farewell(user_name)
-    print()
-    w=get_terminal_width()
-    pad=" "*max(0,(w-len(msg))//2)
-    type_out(pad+msg,CYAN,0.04)
-    speak_wait(msg,voice)
-    print()
-
+# ── History ───────────────────────────────────────────────────────────────────
 def load_history():
     if os.path.exists(HISTORY_FILE):
         try:
@@ -492,189 +738,412 @@ def load_history():
 
 def save_history(history):
     try:
-        with open(HISTORY_FILE,"w") as f: json.dump(history,f,indent=2)
+        with open(HISTORY_FILE, "w") as f: json.dump(history, f, indent=2)
     except: pass
 
 def show_history():
-    history=load_history()
+    history = load_history()
     if not history:
-        print(CYAN+"  No history yet."+RESET); return
-    print(CYAN+f"\n  Last {min(10,len(history))} messages"+RESET)
+        print(TEAL + "  ◦ No history yet." + RESET); return
+    w = get_terminal_width()
+    print()
+    print(DARK + "  " + "─" * (w - 4) + RESET)
+    print(TEAL + f"  ◈ Last {min(10, len(history))} messages" + RESET)
+    print(DARK + "  " + "─" * (w - 4) + RESET)
     for msg in history[-10:]:
-        t=msg.get("time",""); role=msg.get("role",""); content=msg.get("content","")[:80]
-        if role=="user": print(GREEN+f"  [{t}] You: {content}..."+RESET)
-        else: print(BLUE+f"  [{t}] AI : {content}..."+RESET)
+        t       = msg.get("time", "")
+        role    = msg.get("role", "")
+        content = msg.get("content", "")[:80]
+        if role == "user":
+            print(GREEN + f"  ~ [{t}] You: " + WHITE + f"{content}..." + RESET)
+        else:
+            print(BLUE + f"  ◈ [{t}] AI:  " + MUTED + f"{content}..." + RESET)
+    print(DARK + "  " + "─" * (w - 4) + RESET)
     print()
 
 def clear_history():
     if os.path.exists(HISTORY_FILE): os.remove(HISTORY_FILE)
     conversation_history.clear()
-    print(CYAN+"  Memory cleared."+RESET)
+    print(TEAL + "  ◦ Memory cleared." + RESET)
 
-def print_dev(text,color=BLUE):
-    in_code=False
+# ── Print Dev response ────────────────────────────────────────────────────────
+def print_dev(text, color=BLUE):
+    in_code = False
     for line in text.split("\n"):
         if line.startswith("```"):
-            in_code=not in_code; print(YELLOW+line+RESET)
-        elif in_code: print(YELLOW+line+RESET)
-        else: print(color+line+RESET)
+            in_code = not in_code
+            print(YELLOW + "  " + line + RESET)
+        elif in_code:
+            print(YELLOW + "  " + line + RESET)
+        else:
+            print(color + "  " + line + RESET)
 
-def listen():
-    print(CYAN+"  Listening for 6 seconds... speak now!"+RESET)
-    sample_rate=16000
-    recording=sd.rec(int(6*sample_rate),samplerate=sample_rate,channels=1,dtype="int16")
-    sd.wait()
-    print(CYAN+"  Transcribing..."+RESET)
-    with tempfile.NamedTemporaryFile(suffix=".wav",delete=False) as f:
-        tmp_path=f.name
-        wav.write(tmp_path,sample_rate,recording)
+def status_line(start_time, reply, persona_name, accent):
+    elapsed = int((time.time() - start_time) * 1000)
+    words   = len(reply.split())
+    now     = datetime.now().strftime("%I:%M %p")
+    w       = get_terminal_width()
+    line    = f"  {accent}◈ {persona_name}{RESET}  {DARK}◦{RESET}  {MUTED}{elapsed}ms{RESET}  {DARK}◦{RESET}  {MUTED}{words} words{RESET}  {DARK}◦{RESET}  {MUTED}{now}{RESET}"
+    print()
+    print(DARK + "  " + "─" * (w - 4) + RESET)
+    print(line)
+    print(DARK + "  " + "─" * (w - 4) + RESET)
+    print()
+
+# ── File Reader ───────────────────────────────────────────────────────────────
+def handle_file_read(cmd, p, voice, persona_key):
+    parts = cmd.strip().split(" ", 1)
+    if len(parts) < 2:
+        print(TEAL + "  Usage: read <filename>" + RESET)
+        print(MUTED + "  Example: read dev.py" + RESET)
+        return
+    filepath = os.path.expanduser(parts[1].strip())
+    if not os.path.exists(filepath):
+        local = os.path.join(os.getcwd(), parts[1].strip())
+        if os.path.exists(local): filepath = local
+        else:
+            print(CORAL + f"  ✕ File not found: {parts[1]}" + RESET); return
+
+    size = os.path.getsize(filepath)
+    w    = get_terminal_width()
+    print()
+    print(DARK + "  " + "─" * (w-4) + RESET)
+    print(BLUE + f"  ◈ Reading: {WHITE}{os.path.basename(filepath)}{RESET}  {MUTED}◦  {size} bytes{RESET}")
+    print(DARK + "  " + "─" * (w-4) + RESET)
+    print()
+
     try:
-        with open(tmp_path,"rb") as af:
-            t=client.audio.transcriptions.create(model="whisper-large-v3",file=af)
-        os.unlink(tmp_path)
-        return t.text
-    except Exception as e:
-        print(RED+f"  Error: {e}"+RESET)
-        return ""
+        with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+        total_lines = len(lines)
+        print(YELLOW + f"  ◦ Preview — first {min(20, total_lines)} lines" + RESET)
+        print(DARK + "  " + "─" * 40 + RESET)
+        for i, line in enumerate(lines[:20], 1):
+            print(MUTED + f"  {i:3} " + RESET + WHITE + line.rstrip() + RESET)
+        if total_lines > 20:
+            print(MUTED + f"  ... {total_lines - 20} more lines" + RESET)
+        print()
+        print(BLUE + f"  ◈ {p['name']} analyzing..." + RESET)
 
+        stop_event = threading.Event()
+        anim_thread = threading.Thread(target=thinking_animation, args=(stop_event,))
+        anim_thread.daemon = True
+        anim_thread.start()
+
+        file_content = "".join(lines[:200])
+        try:
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": PERSONAS[persona_key]["prompt"]},
+                    {"role": "user", "content": f"Analyze this file:\n1. What it does\n2. Key functions\n3. Issues or improvements\n\nFilename: {os.path.basename(filepath)}\n\n{file_content}"}
+                ],
+                max_tokens=1024)
+        finally:
+            stop_event.set()
+            anim_thread.join()
+
+        reply = response.choices[0].message.content
+        print()
+        print(DARK + "  " + "─" * (w-4) + RESET)
+        print_dev(reply, p["accent"])
+        print(DARK + "  " + "─" * (w-4) + RESET)
+        print()
+        speak(f"Analysis complete. {reply[:200]}", voice)
+    except Exception as e:
+        print(CORAL + f"  ✕ Error: {e}" + RESET)
+
+# ── Web Search ────────────────────────────────────────────────────────────────
 def web_search(query):
-    print(CYAN+f"  Searching: {query}"+RESET)
+    print(MUTED + f"  ◦ Searching: {query}" + RESET)
     try:
         with DDGS() as ddgs:
-            results=list(ddgs.text(query,max_results=4))
+            results = list(ddgs.text(query, max_results=4))
         if not results: return "No results found."
         return "".join(f"- {r['title']}\n  {r['body']}\n  Source: {r['href']}\n\n" for r in results)
     except Exception as e: return f"Search failed: {e}"
 
 def should_search(user_input):
-    keywords=["search","look up","latest","news","today","current","price of","weather",
-              "2024","2025","2026","what is","who is","when is","how much"]
+    keywords = ["search","look up","latest","news","today","current","price of",
+                "weather","2024","2025","2026","what is","who is","when is","how much"]
     return any(k in user_input.lower() for k in keywords)
 
+# ── Run Command ───────────────────────────────────────────────────────────────
 def run_command(cmd):
     if any(d in cmd for d in DANGEROUS):
-        return RED+"  Blocked: too dangerous."+RESET
-    print(CYAN+f"  Running: {cmd}"+RESET)
+        return CORAL + "  ✕ Blocked: too dangerous." + RESET
+    print(MUTED + f"  ◦ Running: {cmd}" + RESET)
     try:
-        result=subprocess.run(cmd,shell=True,capture_output=True,text=True,timeout=15)
-        return YELLOW+(result.stdout or result.stderr or "(no output)").strip()+RESET
-    except subprocess.TimeoutExpired: return RED+"  Timed out."+RESET
-    except Exception as e: return RED+f"  Error: {e}"+RESET
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
+        return YELLOW + (result.stdout or result.stderr or "(no output)").strip() + RESET
+    except subprocess.TimeoutExpired: return CORAL + "  ✕ Timed out." + RESET
+    except Exception as e: return CORAL + f"  ✕ Error: {e}" + RESET
 
-def chat(user_input,persona_key):
-    extra=""
-    if should_search(user_input):
-        results=web_search(user_input)
-        extra=f"\n\nWeb search results:\n{results}\n\nUse these to answer."
-    now=datetime.now().strftime("%Y-%m-%d %H:%M")
-    conversation_history.append({"role":"user","content":user_input+extra})
-    saved=load_history()
-    saved.append({"role":"user","content":user_input,"time":now})
-    response=client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role":"system","content":PERSONAS[persona_key]["prompt"]}]+conversation_history,
-        max_tokens=1024)
-    reply=response.choices[0].message.content
-    conversation_history.append({"role":"assistant","content":reply})
-    saved.append({"role":"assistant","content":reply,"time":now})
-    save_history(saved)
-    return reply
+# ── Chat with streaming ───────────────────────────────────────────────────────
+def chat_stream(user_input, persona_key, accent=BLUE, voice="Samantha"):
+    import tty, termios, select
 
+    stop_event  = threading.Event()
+    start_time  = time.time()
+
+    def watch_keys():
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            while not stop_event.is_set():
+                r, _, _ = select.select([sys.stdin], [], [], 0.05)
+                if r:
+                    ch = sys.stdin.read(1)
+                    if ch: stop_event.set(); break
+        except: pass
+        finally:
+            try: termios.tcsetattr(fd, termios.TCSADRAIN, old)
+            except: pass
+
+    anim_thread = threading.Thread(target=thinking_animation, args=(stop_event,))
+    anim_thread.daemon = True
+    anim_thread.start()
+
+    reply = ""
+    try:
+        extra = ""
+        if should_search(user_input):
+            results = web_search(user_input)
+            extra = f"\n\nWeb search results:\n{results}\n\nUse these to answer."
+
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        conversation_history.append({"role": "user", "content": user_input + extra})
+        saved = load_history()
+        saved.append({"role": "user", "content": user_input, "time": now})
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "system", "content": PERSONAS[persona_key]["prompt"]}] + conversation_history,
+            max_tokens=1024,
+            stream=True
+        )
+
+        # stop spinner, start streaming
+        stop_event.set()
+        anim_thread.join(timeout=0.3)
+        print("\r" + " " * 30 + "\r", end="", flush=True)
+        stop_event.clear()
+
+        key_thread = threading.Thread(target=watch_keys)
+        key_thread.daemon = True
+        key_thread.start()
+
+        in_code = False
+        buffer  = ""
+
+        for chunk in response:
+            if stop_event.is_set():
+                print(MUTED + "\n  ◦ stopped" + RESET)
+                stop_speaking()
+                break
+            delta   = chunk.choices[0].delta.content or ""
+            reply  += delta
+            buffer += delta
+
+            while " " in buffer or "\n" in buffer:
+                idx_s = buffer.find(" ")
+                idx_n = buffer.find("\n")
+                if idx_n != -1 and (idx_s == -1 or idx_n < idx_s):
+                    word   = buffer[:idx_n]
+                    buffer = buffer[idx_n+1:]
+                    if word:
+                        if word.strip().startswith("```"):
+                            in_code = not in_code
+                            print(YELLOW + "  " + word + RESET, end="", flush=True)
+                        else:
+                            col = YELLOW if in_code else accent
+                            print(col + word + RESET, end="", flush=True)
+                    print()
+                else:
+                    word   = buffer[:idx_s]
+                    buffer = buffer[idx_s+1:]
+                    if word.strip().startswith("```"):
+                        in_code = not in_code
+                        print(YELLOW + "  " + word + " " + RESET, end="", flush=True)
+                    else:
+                        col = YELLOW if in_code else accent
+                        print(col + word + " " + RESET, end="", flush=True)
+
+        if buffer and not stop_event.is_set():
+            col = YELLOW if in_code else accent
+            print(col + "  " + buffer + RESET, end="", flush=True)
+        print()
+
+        stop_event.set()
+
+        conversation_history.append({"role": "assistant", "content": reply})
+        saved.append({"role": "assistant", "content": reply, "time": now})
+        save_history(saved)
+
+        if reply:
+            speak(reply, voice)
+
+    except Exception as e:
+        stop_event.set()
+        print(CORAL + f"  ✕ Error: {e}" + RESET)
+
+    return reply, start_time
+
+# ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     global conversation_history
-    user_name=get_user_name()
-    current_persona=load_persona()
-    city=get_city()
-    saved=load_history()
-    if saved:
-        conversation_history=[{"role":m["role"],"content":m["content"]} for m in saved[-20:]]
-        splash_screen(returning=True,msg_count=len(conversation_history),current_persona=current_persona,user_name=user_name)
-    else:
-        splash_screen(returning=False,current_persona=current_persona,user_name=user_name)
 
-    p=PERSONAS[current_persona]
-    morning_briefing(p["color"],p["voice"],user_name,city)
+    user_name       = get_user_name()
+    current_persona = load_persona()
+    city            = get_city()
+    saved           = load_history()
+
+    if saved:
+        conversation_history = [{"role": m["role"], "content": m["content"]} for m in saved[-20:]]
+        splash_screen(returning=True, msg_count=len(conversation_history),
+                      current_persona=current_persona, user_name=user_name)
+    else:
+        splash_screen(returning=False, current_persona=current_persona, user_name=user_name)
+
+    p = PERSONAS[current_persona]
+    morning_briefing(p["voice"], user_name, city, p["accent"])
 
     while True:
         try:
-            p=PERSONAS[current_persona]
-            voice=p["voice"]
-            user_input=input(p["color"]+f"  {p['emoji']} You: "+RESET).strip()
+            p     = PERSONAS[current_persona]
+            voice = p["voice"]
+            ac    = p["accent"]
+            w     = get_terminal_width()
+
+            # user prompt — tilde style
+            prompt = ac + "  ~ " + RESET + WHITE
+            user_input = input(prompt).strip()
+            print(RESET, end="")
+
             if not user_input: continue
 
-            if user_input.lower() in ["exit","quit","bye"]:
-                farewell(user_name,voice); break
-            if user_input.lower()=="history":
+            if user_input.lower() in ["exit", "quit", "bye"]:
+                farewell(user_name, voice); break
+
+            if user_input.lower() == "history":
                 show_history(); continue
-            if user_input.lower()=="clear memory":
+
+            if user_input.lower() == "clear memory":
                 clear_history(); continue
-            if user_input.lower()=="briefing":
-                morning_briefing(p["color"],voice,user_name,city); continue
+
+            if user_input.lower() == "briefing":
+                morning_briefing(voice, user_name, city, ac); continue
+
             if user_input.lower().startswith("city "):
-                set_city(user_input[5:].strip(),voice)
-                city=user_input[5:].strip(); continue
+                set_city(user_input[5:].strip(), voice)
+                city = user_input[5:].strip(); continue
+
             if user_input.lower().startswith("todo"):
-                handle_todo(user_input,p["color"],voice); continue
+                handle_todo(user_input, ac, voice); continue
+
             if user_input.lower().startswith("git "):
-                git_helper(user_input,p["color"],voice,current_persona); continue
-            if user_input.lower()=="persona":
-                current_persona=show_personas(current_persona,user_name)
+                git_helper(user_input, ac, voice, current_persona); continue
+
+            if user_input.lower() == "persona":
+                current_persona = show_personas(current_persona, user_name)
                 save_persona(current_persona); continue
+
             if user_input.lower().startswith("persona "):
-                new_p=user_input[8:].strip().lower()
+                new_p = user_input[8:].strip().lower()
                 if new_p in PERSONAS:
-                    current_persona=new_p; save_persona(current_persona)
-                    p2=PERSONAS[current_persona]
-                    print(p2["color"]+f"\n  Switched to {p2['emoji']} {p2['name']}"+RESET)
-                    speak(f"Hi {user_name}! I am {p2['name']}. {p2['desc']}.",p2["voice"])
+                    current_persona = new_p
+                    save_persona(current_persona)
+                    p2 = PERSONAS[current_persona]
+                    print(p2["accent"] + f"\n  ◈ Switched to {p2['name']} — {p2['desc']}\n" + RESET)
+                    speak(f"Hi {user_name}! I am {p2['name']}.", p2["voice"])
                 else:
-                    print(RED+f"  Unknown persona. Try: {', '.join(PERSONAS.keys())}"+RESET)
+                    print(CORAL + f"  Unknown persona. Try: {', '.join(PERSONAS.keys())}" + RESET)
                 continue
+
             if user_input.lower().startswith("open "):
-                result=open_url(user_input[5:].strip())
-                speak(result,voice); continue
-            if user_input.lower()=="v":
-                spoken=listen()
-                if not spoken: continue
-                print(GREEN+f"  You (voice): {spoken}"+RESET)
-                user_input=spoken
+                result = open_url(user_input[5:].strip())
+                speak(result, voice); continue
+
+            if user_input.lower().startswith("read "):
+                handle_file_read(user_input, p, voice, current_persona); continue
+
+            if user_input.lower() == "v":
+                print(TEAL + "  ◦ Listening for 6 seconds... speak now!" + RESET)
+                import scipy.io.wavfile as wav_mod
+                sample_rate = 16000
+                recording   = sd.rec(int(6*sample_rate), samplerate=sample_rate, channels=1, dtype="int16")
+                sd.wait()
+                print(MUTED + "  ◦ Transcribing..." + RESET)
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+                    tmp_path = f.name
+                    wav_mod.write(tmp_path, sample_rate, recording)
+                try:
+                    with open(tmp_path, "rb") as af:
+                        t = client.audio.transcriptions.create(model="whisper-large-v3", file=af)
+                    os.unlink(tmp_path)
+                    spoken = t.text
+                    if not spoken: continue
+                    print(GREEN + f"  ~ You (voice): {WHITE}{spoken}{RESET}")
+                    user_input = spoken
+                except Exception as e:
+                    print(CORAL + f"  ✕ {e}" + RESET); continue
+
             if user_input.lower().startswith("search:"):
-                query=user_input[7:].strip()
-                results=web_search(query)
-                conversation_history.append({"role":"user","content":f"Summarize:\n{results}"})
-                response=client.chat.completions.create(
+                query   = user_input[7:].strip()
+                results = web_search(query)
+                conversation_history.append({"role": "user", "content": f"Summarize:\n{results}"})
+                stop_event = threading.Event()
+                anim = threading.Thread(target=thinking_animation, args=(stop_event,))
+                anim.daemon = True
+                anim.start()
+                response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
-                    messages=[{"role":"system","content":p["prompt"]}]+conversation_history,
+                    messages=[{"role": "system", "content": p["prompt"]}] + conversation_history,
                     max_tokens=1024)
-                reply=response.choices[0].message.content
-                conversation_history.append({"role":"assistant","content":reply})
-                print(BOLD+f"\n  {p['emoji']} {p['name']}:"+RESET)
-                print_dev(reply,p["color"]); print(); speak(reply,voice); continue
+                stop_event.set(); anim.join()
+                print("\r" + " " * 30 + "\r", end="", flush=True)
+                reply = response.choices[0].message.content
+                conversation_history.append({"role": "assistant", "content": reply})
+                print()
+                print(DARK + "  " + "─" * (w-4) + RESET)
+                print(ac + f"  ◈ {p['name']}:" + RESET)
+                print(DARK + "  " + "─" * (w-4) + RESET)
+                print_dev(reply, ac)
+                status_line(time.time(), reply, p["name"], ac)
+                speak(reply, voice)
+                continue
 
-            print(BOLD+f"\n  {p['emoji']} {p['name']}:"+RESET)
-            reply=chat(user_input,current_persona)
+            # normal chat
+            print()
+            print(DARK + "  " + "─" * (w-4) + RESET)
+            print(ac + f"  ◈ {p['name']}:" + RESET)
+            print(DARK + "  " + "─" * (w-4) + RESET)
 
-            open_line=next((l.strip().replace("OPEN_URL:","").strip() for l in reply.splitlines() if l.strip().startswith("OPEN_URL:")),None)
-            run_line=next((l.strip().replace("RUN_CMD:","").strip() for l in reply.splitlines() if l.strip().startswith("RUN_CMD:")),None)
+            reply, start_time = chat_stream(user_input, current_persona, accent=ac, voice=voice)
+
+            open_line = next((l.strip().replace("OPEN_URL:","").strip() for l in reply.splitlines() if l.strip().startswith("OPEN_URL:")), None)
+            run_line  = next((l.strip().replace("RUN_CMD:", "").strip() for l in reply.splitlines() if l.strip().startswith("RUN_CMD:")),  None)
 
             if open_line:
-                clean=reply.replace(f"OPEN_URL: {open_line}","").replace(f"OPEN_URL:{open_line}","").strip()
-                if clean: print_dev(clean,p["color"])
-                result=open_url(open_line)
-                print(GREEN+f"  {result}"+RESET); speak(result,voice)
+                result = open_url(open_line)
+                print(GREEN + f"  ◦ {result}" + RESET)
+                speak(result, voice)
             elif run_line:
-                clean=reply.replace(f"RUN_CMD: {run_line}","").replace(f"RUN_CMD:{run_line}","").strip()
-                if clean: print_dev(clean,p["color"]); speak(clean,voice)
-                confirm=input(YELLOW+f"\n  Run this? '{run_line}' (y/n): "+RESET).strip()
-                if confirm=="y":
-                    print(run_command(run_line)); speak("Done.",voice)
-                else: print(CYAN+"  Cancelled."+RESET)
-            else:
-                print_dev(reply,p["color"]); speak(reply,voice)
-            print()
+                confirm = input(YELLOW + f"\n  ◦ Run this? '{run_line}' (y/n): " + RESET + WHITE).strip()
+                print(RESET, end="")
+                if confirm == "y":
+                    print(run_command(run_line))
+                    speak("Done.", voice)
+                else:
+                    print(MUTED + "  Cancelled." + RESET)
+
+            status_line(start_time, reply, p["name"], ac)
 
         except KeyboardInterrupt:
-            stop_speaking(); farewell(user_name,voice); sys.exit(0)
+            stop_speaking()
+            farewell(user_name, voice)
+            sys.exit(0)
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
