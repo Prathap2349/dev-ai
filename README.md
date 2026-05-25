@@ -1,162 +1,303 @@
-# ⚡ Dev AI — Your Personal Terminal Assistant
+# 🌊 Dev AI — Ocean Dark Edition
 
-A powerful AI assistant that lives in your Mac terminal. Powered by Groq and llama-3.3-70b.
+> A futuristic AI-powered terminal assistant for macOS built with Python, Groq, voice interaction, web search, Git tools, AI personas, and an Ocean Dark cyberpunk interface.
 
+---
+
+## ✨ Preview
+
+```text
+██████╗ ███████╗██╗   ██╗
+██╔══██╗██╔════╝██║   ██║
+██║  ██║█████╗  ██║   ██║
+██║  ██║██╔══╝  ╚██╗ ██╔╝
+██████╔╝███████╗ ╚████╔╝
+╚═════╝ ╚══════╝  ╚═══╝
+
+◈ Dev AI — Ocean Dark Edition
+Powered by Groq • llama-3.3-70b
 ```
-╔══════════════════════════════════════════════════════╗
-║                                                      ║
-║        ██████╗ ███████╗██╗   ██╗                     ║
-║        ██╔══██╗██╔════╝██║   ██║                     ║
-║        ██║  ██║█████╗  ██║   ██║                     ║
-║        ██║  ██║██╔══╝  ╚██╗ ██╔╝                     ║
-║        ██████╔╝███████╗ ╚████╔╝                      ║
-║        ╚═════╝ ╚══════╝  ╚═══╝                       ║
-║                                                      ║
-║        ⚡  Dev  |  Professional coder & solver        ║
-║           Powered by Groq  |  llama-3.3-70b           ║
-╚══════════════════════════════════════════════════════╝
+
+---
+
+# 🚀 Features
+
+## 🎭 Multiple AI Personas
+Switch between different AI personalities instantly.
+
+| Persona | Style |
+|---|---|
+| ⚡ Dev | Professional coding assistant |
+| 🎓 Mentor | Patient teacher |
+| 😎 Buddy | Friendly coding partner |
+| 🧠 Sage | Deep software architect |
+| 🚀 Turbo | Fast minimal answers |
+
+---
+
+## 🎤 Voice Features
+
+- Voice input using Whisper
+- AI speaks responses aloud
+- Natural macOS voices
+- Hands-free interaction
+
+---
+
+## 🌐 Built-in Web Search
+
+Search the internet directly from the terminal:
+
+```bash
+search: latest AI news
 ```
 
 ---
 
-## Features
+## 📋 Smart To-Do System
 
-- **5 AI Personas** — Each with a unique voice and personality
-- **Voice output** — Dev speaks every response out loud
-- **Voice input** — Speak your questions (type `v`)
-- **Web search** — Real-time internet search built in
-- **Morning briefing** — Weather + top news every morning
-- **To-do list** — Add, check off, and manage tasks
-- **Git helper** — AI writes your commit messages
-- **Chat memory** — Remembers your past conversations
-- **Run commands** — Ask Dev to run terminal commands safely
-- **Personalized** — Asks your name on first run, never forgets it
+Manage tasks directly inside Dev AI.
+
+```bash
+todo add Build portfolio website
+todo done 1
+```
 
 ---
 
-## Personas
+## 🔧 Git Assistant
 
-| Command | Persona | Voice | Style |
-|---|---|---|---|
-| `persona dev` | ⚡ Dev | Samantha | Professional coder |
-| `persona mentor` | 🎓 Mentor | Karen | Patient teacher |
-| `persona buddy` | 😎 Buddy | Daniel | Casual & fun |
-| `persona sage` | 🧠 Sage | Alex | Deep architect |
-| `persona turbo` | 🚀 Turbo | Fred | Ultra fast answers |
+AI-powered Git helper:
+
+- Generate commit messages
+- Explain Git commands
+- Push/Pull support
+- Git status overview
 
 ---
 
-## Requirements
+## ☁️ Morning Briefing
 
-- Mac (macOS 10.15+)
+Get:
+
+- Weather updates
+- Top news
+- Sports headlines
+- Technology news
+- India news
+
+directly inside your terminal.
+
+---
+
+## 🧠 Memory System
+
+Dev AI remembers:
+
+- Your name
+- Chat history
+- Preferred persona
+- City for weather
+
+All stored locally on your Mac.
+
+---
+
+# 🖥️ Requirements
+
+- macOS (Apple Silicon / Intel)
 - Python 3.10+
-- A free Groq API key → [console.groq.com](https://console.groq.com)
+- Homebrew
+- Groq API Key
 
 ---
 
-## Setup
+# ⚙️ Installation
 
-### 1. Clone the repo
+## 1. Clone Repository
 
 ```bash
-git clone https://github.com/Prathap2349/dev-ai.git
-cd dev-ai
+git clone https://github.com/Prathap2349/Dev-Ai.git
+cd Dev-Ai
 ```
 
-### 2. Install dependencies
+---
+
+## 2. Install Homebrew (if needed)
 
 ```bash
-pip3 install groq ddgs requests sounddevice scipy numpy --break-system-packages
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-### 3. Get your Groq API key
+---
 
-1. Go to [console.groq.com](https://console.groq.com)
-2. Sign up for free
-3. Click **API Keys** → **Create API Key**
-4. Copy your key
-
-### 4. Set your API key
-
-Add this to your `~/.zshrc`:
+## 3. Install PortAudio
 
 ```bash
-echo 'export GROQ_API_KEY="paste_your_key_here"' >> ~/.zshrc
+brew install portaudio
+```
+
+---
+
+## 4. Install Python Packages
+
+```bash
+pip3 install groq requests sounddevice scipy numpy duckduckgo-search ddgs
+```
+
+---
+
+## 5. Add Groq API Key
+
+Open `.zshrc`
+
+```bash
+nano ~/.zshrc
+```
+
+Add:
+
+```bash
+export GROQ_API_KEY="your_api_key_here"
+```
+
+Reload terminal:
+
+```bash
 source ~/.zshrc
 ```
 
-> **Never share your API key publicly or commit it to GitHub!**
+---
 
-### 5. Create the `dev` shortcut
+## 6. Create Dev Shortcut
 
 ```bash
 echo 'alias dev="python3 ~/dev-ai/dev.py"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-### 6. Run Dev!
+---
+
+## 7. Run Dev AI
 
 ```bash
 dev
 ```
 
-On first run, Dev will ask your name and remember it forever.
-
 ---
 
-## Commands
+# 📚 Commands
 
-| Command | What it does |
+| Command | Description |
 |---|---|
-| `v` | Voice input — speak your question |
-| `search: x` | Force a web search |
-| `todo` | Show your to-do list |
-| `todo add <task>` | Add a task |
-| `todo done <n>` | Mark task as done |
-| `todo delete <n>` | Delete a task |
+| `v` | Voice input |
+| `search: query` | Web search |
+| `todo` | Show tasks |
+| `todo add <task>` | Add task |
+| `todo done <n>` | Complete task |
 | `git status` | Show git changes |
-| `git commit` | AI writes your commit message |
-| `git push` | Push to remote |
-| `git explain <cmd>` | Explain any git command |
-| `persona` | Switch AI persona interactively |
-| `briefing` | Show morning briefing again |
-| `history` | See past conversations |
-| `clear memory` | Wipe all memory |
-| `exit` | Quit Dev |
+| `git commit` | AI-generated commit message |
+| `git push` | Push repository |
+| `persona` | Switch AI persona |
+| `briefing` | Daily weather + news |
+| `history` | View conversation history |
+| `read <file>` | AI explains a file |
+| `open github` | Open websites |
+| `exit` | Quit Dev AI |
 
 ---
 
-## Customization
+# 🧠 Powered By
 
-Open `dev.py` and change these at the top:
+- Groq
+- llama-3.3-70b
+- Whisper
+- Python
+- DuckDuckGo Search
+- macOS Terminal APIs
 
-```python
-CITY = "Coimbatore"  # Change to your city for weather
+---
+
+# 📁 Project Structure
+
+```text
+dev-ai/
+│
+├── dev.py
+├── README.md
+├── requirements.txt
+│
+├── ~/.dev_history.json
+├── ~/.dev_persona.json
+├── ~/.dev_todos.json
+└── ~/.dev_config.json
 ```
 
-To change the default persona, edit `~/.dev_persona.json`.
+---
+
+# 🔒 Privacy
+
+Your data stays local.
+
+- Chat history stored locally
+- Name stored locally
+- No tracking
+- API key stored in environment variables
+
+Only Groq receives prompts for AI generation.
 
 ---
 
-## Privacy
+# 🛠️ Future Plans
 
-- Your API key is **never stored in the code** — it's read from your environment
-- Chat history is saved locally at `~/.dev_history.json`
-- Your name is saved locally at `~/.dev_config.json`
-- Nothing is sent to any server except Groq (for AI) and wttr.in (for weather)
-
----
-
-## Contributing
-
-Pull requests welcome! Feel free to add new personas, features, or improvements.
+- Linux support
+- Windows support
+- Plugin system
+- Local LLM support
+- VS Code integration
+- Better UI animations
+- Multi-agent workflows
 
 ---
 
-## License
+# 🤝 Contributing
 
-MIT License — free to use, modify, and share.
+Pull requests are welcome.
+
+Ideas:
+- New personas
+- New themes
+- More Git tools
+- Better voice system
+- Plugins
 
 ---
 
-Made with ❤️ by the Dev AI community
+# 📜 License
+
+MIT License
+
+Free to use, modify, and distribute.
+
+---
+
+# 👨‍💻 Author
+
+### Prathap Senthilkumar
+
+GitHub:
+https://github.com/Prathap2349
+
+---
+
+# ⭐ Support
+
+If you like this project:
+
+- Star the repository
+- Share it with friends
+- Fork and improve it
+
+---
+
+## 🌊 Dev AI — Your Terminal. Your Assistant. Your Workflow.
