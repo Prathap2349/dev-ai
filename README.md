@@ -1,303 +1,243 @@
-# 🌊 Dev AI — Ocean Dark Edition
+<div align="center">
 
-> A futuristic AI-powered terminal assistant for macOS built with Python, Groq, voice interaction, web search, Git tools, AI personas, and an Ocean Dark cyberpunk interface.
-
----
-
-## ✨ Preview
-
-```text
+```
 ██████╗ ███████╗██╗   ██╗
 ██╔══██╗██╔════╝██║   ██║
 ██║  ██║█████╗  ██║   ██║
 ██║  ██║██╔══╝  ╚██╗ ██╔╝
 ██████╔╝███████╗ ╚████╔╝
 ╚═════╝ ╚══════╝  ╚═══╝
-
-◈ Dev AI — Ocean Dark Edition
-Powered by Groq • llama-3.3-70b
 ```
+
+# Dev AI — Your Personal Terminal Assistant
+
+**Professional AI assistant that lives in your Mac terminal**
+
+Powered by [Groq](https://console.groq.com) · llama-3.3-70b · 7 Themes · 5 Personas
+
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)](https://python.org)
+[![Groq](https://img.shields.io/badge/Powered%20by-Groq-orange?style=flat-square)](https://groq.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey?style=flat-square&logo=apple)](https://apple.com)
+
+</div>
 
 ---
 
-# 🚀 Features
+## What is Dev AI?
 
-## 🎭 Multiple AI Personas
-Switch between different AI personalities instantly.
+Dev AI is a fully featured AI assistant that runs inside your Mac terminal. It greets you by name, reads the news, checks the weather, manages your tasks, helps with Git, and answers any question — all with voice output and beautiful terminal UI.
 
-| Persona | Style |
+---
+
+## Features
+
+| Feature | Description |
 |---|---|
-| ⚡ Dev | Professional coding assistant |
-| 🎓 Mentor | Patient teacher |
-| 😎 Buddy | Friendly coding partner |
-| 🧠 Sage | Deep software architect |
-| 🚀 Turbo | Fast minimal answers |
+| 🎨 **7 Themes** | Ocean Dark, Hacker Green, Amber Retro, Frost White, Nord Arctic, Rose Gold, Dracula |
+| 🤖 **5 AI Personas** | Dev, Mentor, Buddy, Sage, Turbo — each with unique voice |
+| 🔊 **Voice output** | Every reply spoken aloud via Mac's built-in voices |
+| 🎙️ **Voice input** | Speak your questions (type `v`) |
+| 🌐 **Web search** | Real-time internet search built in |
+| 📰 **Morning briefing** | Weather + top news every time you open Dev |
+| ✅ **To-do list** | Add, check off, delete tasks with progress bar |
+| 🔧 **Git helper** | AI writes your commit messages |
+| 📁 **File reader** | Ask Dev to read and explain any file |
+| 💻 **System monitor** | CPU, memory, disk, battery at a glance |
+| 🧠 **Memory** | Remembers your past conversations |
+| 🌍 **Auto city detect** | Automatically detects your city for weather |
+| 🔒 **Safe** | API key never stored in code |
 
 ---
 
-## 🎤 Voice Features
+## Themes Preview
 
-- Voice input using Whisper
-- AI speaks responses aloud
-- Natural macOS voices
-- Hands-free interaction
-
----
-
-## 🌐 Built-in Web Search
-
-Search the internet directly from the terminal:
-
-```bash
-search: latest AI news
+```
+theme ocean    →  🌊 Ocean Dark     deep navy + blue purple + teal
+theme hacker   →  💚 Hacker Green   pure black + bright matrix green
+theme amber    →  🟡 Amber Retro    dark brown + warm amber CRT style
+theme frost    →  ❄️  Frost White    clean white + navy + blue accents
+theme nord     →  🔵 Nord Arctic    dark blue-grey + teal + soft white
+theme rose     →  🌹 Rose Gold      dark charcoal + rose pink + gold
+theme dracula  →  🧛 Dracula        dark purple + bright purple + pink
 ```
 
 ---
 
-## 📋 Smart To-Do System
+## Personas
 
-Manage tasks directly inside Dev AI.
-
-```bash
-todo add Build portfolio website
-todo done 1
-```
-
----
-
-## 🔧 Git Assistant
-
-AI-powered Git helper:
-
-- Generate commit messages
-- Explain Git commands
-- Push/Pull support
-- Git status overview
+| Command | Name | Voice | Style |
+|---|---|---|---|
+| `persona dev` | ⚡ Dev | Samantha | Professional coder |
+| `persona mentor` | 🎓 Mentor | Karen | Patient teacher |
+| `persona buddy` | 😎 Buddy | Daniel | Casual & fun |
+| `persona sage` | 🧠 Sage | Alex | Deep architect |
+| `persona turbo` | 🚀 Turbo | Fred | Ultra fast answers |
 
 ---
 
-## ☁️ Morning Briefing
+## Requirements
 
-Get:
-
-- Weather updates
-- Top news
-- Sports headlines
-- Technology news
-- India news
-
-directly inside your terminal.
+- **Mac** (macOS 10.15 or later)
+- **Python 3.10+**
+- **Free Groq API key** → [console.groq.com](https://console.groq.com)
 
 ---
 
-## 🧠 Memory System
+## Setup Guide
 
-Dev AI remembers:
-
-- Your name
-- Chat history
-- Preferred persona
-- City for weather
-
-All stored locally on your Mac.
-
----
-
-# 🖥️ Requirements
-
-- macOS (Apple Silicon / Intel)
-- Python 3.10+
-- Homebrew
-- Groq API Key
-
----
-
-# ⚙️ Installation
-
-## 1. Clone Repository
+### Step 1 — Clone the repo
 
 ```bash
 git clone https://github.com/Prathap2349/Dev-Ai.git
 cd Dev-Ai
 ```
 
----
-
-## 2. Install Homebrew (if needed)
+### Step 2 — Install dependencies
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+pip3 install groq ddgs requests sounddevice scipy numpy --break-system-packages
 ```
 
----
+### Step 3 — Get your free Groq API key
 
-## 3. Install PortAudio
+1. Go to [console.groq.com](https://console.groq.com)
+2. Sign up for free
+3. Click **API Keys** → **Create API Key**
+4. Copy your key (starts with `gsk_...`)
 
-```bash
-brew install portaudio
-```
-
----
-
-## 4. Install Python Packages
+### Step 4 — Set your API key
 
 ```bash
-pip3 install groq requests sounddevice scipy numpy duckduckgo-search ddgs
-```
-
----
-
-## 5. Add Groq API Key
-
-Open `.zshrc`
-
-```bash
-nano ~/.zshrc
-```
-
-Add:
-
-```bash
-export GROQ_API_KEY="your_api_key_here"
-```
-
-Reload terminal:
-
-```bash
+echo 'export GROQ_API_KEY="paste_your_key_here"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
----
+> ⚠️ **Never share your API key or commit it to GitHub!**
 
-## 6. Create Dev Shortcut
+### Step 5 — Create the shortcut
 
 ```bash
-echo 'alias dev="python3 ~/dev-ai/dev.py"' >> ~/.zshrc
+echo 'alias dev="python3 ~/Dev-Ai/dev.py"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
----
-
-## 7. Run Dev AI
+### Step 6 — Run Dev!
 
 ```bash
 dev
 ```
 
----
-
-# 📚 Commands
-
-| Command | Description |
-|---|---|
-| `v` | Voice input |
-| `search: query` | Web search |
-| `todo` | Show tasks |
-| `todo add <task>` | Add task |
-| `todo done <n>` | Complete task |
-| `git status` | Show git changes |
-| `git commit` | AI-generated commit message |
-| `git push` | Push repository |
-| `persona` | Switch AI persona |
-| `briefing` | Daily weather + news |
-| `history` | View conversation history |
-| `read <file>` | AI explains a file |
-| `open github` | Open websites |
-| `exit` | Quit Dev AI |
+Dev will ask your name on first run and remember it forever. 🎉
 
 ---
 
-# 🧠 Powered By
+## How to change API key
 
-- Groq
-- llama-3.3-70b
-- Whisper
-- Python
-- DuckDuckGo Search
-- macOS Terminal APIs
+```bash
+nano ~/.zshrc
+```
 
----
+Find and update the line:
+```
+export GROQ_API_KEY="your_new_key_here"
+```
 
-# 📁 Project Structure
+Save with **CTRL+X → Y → Enter** then:
 
-```text
-dev-ai/
-│
-├── dev.py
-├── README.md
-├── requirements.txt
-│
-├── ~/.dev_history.json
-├── ~/.dev_persona.json
-├── ~/.dev_todos.json
-└── ~/.dev_config.json
+```bash
+source ~/.zshrc
 ```
 
 ---
 
-# 🔒 Privacy
+## All Commands
 
-Your data stays local.
+### Chat & Navigation
+| Command | What it does |
+|---|---|
+| `v` | Voice input — speak your question |
+| `search: x` | Force a web search |
+| `open github` | Open any website in browser |
+| `history` | See past conversations |
+| `clear memory` | Wipe all chat memory |
+| `exit` | Quit Dev |
 
-- Chat history stored locally
-- Name stored locally
-- No tracking
-- API key stored in environment variables
+### Themes & Personas
+| Command | What it does |
+|---|---|
+| `theme` | Show all themes |
+| `theme dracula` | Switch to Dracula theme |
+| `persona` | Show all personas |
+| `persona buddy` | Switch to Buddy persona |
 
-Only Groq receives prompts for AI generation.
+### Tools
+| Command | What it does |
+|---|---|
+| `todo` | Show your to-do list |
+| `todo add <task>` | Add a task |
+| `todo done <n>` | Mark task as done |
+| `todo delete <n>` | Delete a task |
+| `todo clear` | Clear all tasks |
+| `briefing` | Show daily news briefing |
+| `sysinfo` | CPU, memory, disk, battery |
+| `city Mumbai` | Change your city |
+| `read dev.py` | Read and explain any file |
 
----
-
-# 🛠️ Future Plans
-
-- Linux support
-- Windows support
-- Plugin system
-- Local LLM support
-- VS Code integration
-- Better UI animations
-- Multi-agent workflows
-
----
-
-# 🤝 Contributing
-
-Pull requests are welcome.
-
-Ideas:
-- New personas
-- New themes
-- More Git tools
-- Better voice system
-- Plugins
-
----
-
-# 📜 License
-
-MIT License
-
-Free to use, modify, and distribute.
-
----
-
-# 👨‍💻 Author
-
-### Prathap Senthilkumar
-
-GitHub:
-https://github.com/Prathap2349
+### Git Helper
+| Command | What it does |
+|---|---|
+| `git status` | Show changed files |
+| `git commit` | AI writes your commit message |
+| `git push` | Push to remote |
+| `git pull` | Pull from remote |
+| `git log` | Recent commits |
+| `git explain rebase` | Explain any git command |
 
 ---
 
-# ⭐ Support
+## File Storage
 
-If you like this project:
+Dev saves everything locally on your Mac:
 
-- Star the repository
-- Share it with friends
-- Fork and improve it
+| File | What it stores | Size |
+|---|---|---|
+| `~/.dev_history.json` | Chat history | ~1-5 MB per month |
+| `~/.dev_config.json` | Name, city, theme | < 1 KB |
+| `~/.dev_persona.json` | Current persona | < 1 KB |
+| `~/.dev_todos.json` | Your tasks | < 10 KB |
 
 ---
 
-## 🌊 Dev AI — Your Terminal. Your Assistant. Your Workflow.
+## Privacy
+
+- ✅ API key stored in your shell config — never in code
+- ✅ Chat history saved locally only
+- ✅ Nothing shared except Groq API calls (for AI) and wttr.in (for weather)
+- ✅ No tracking, no analytics, no ads
+
+---
+
+## Contributing
+
+Pull requests are welcome! Feel free to:
+- Add new themes
+- Add new personas
+- Add new features
+- Fix bugs
+
+---
+
+## License
+
+MIT License — free to use, modify, and share.
+
+---
+
+<div align="center">
+
+Made with ❤️ by [Prathap](https://github.com/Prathap2349)
+
+⭐ Star this repo if you find it useful!
+
+</div>
